@@ -30,24 +30,30 @@ class CallbackListTest extends TestCase
     }
 
 
-    public function testCallReturnValues(): void
+    public function testCallReturnValues()
     {
         $list = new CallbackList();
 
-        $list->add(static fn () => 'a');
-        $list->add(static fn () => 2);
-        $list->add(static fn () => ['c']);
+        $list->add(function () use (&$log) {
+            return 'a';
+        });
+        $list->add(function () use (&$log) {
+            return 2;
+        });
+        $list->add(function () use (&$log) {
+            return ['c'];
+        });
 
         // An array of return values, including mixed return types, is returned
         $this->assertEquals(
-            ['a', 2, ['c']],
-            $list->call(),
+            [ 'a', 2, ['c'] ],
+            $list->call()
         );
 
         // Check invoke syntax
         $this->assertEquals(
-            ['a', 2, ['c']],
-            $list(),
+            [ 'a', 2, ['c'] ],
+            $list()
         );
     }
 
@@ -161,13 +167,15 @@ class CallbackListTest extends TestCase
     }
 
 
-    public function testCallbackIsACallable(): void
+    public function testCallbackIsACallable()
     {
         $list = new CallbackList();
 
-        $this->assertTrue(\is_callable($list));
+        $this->assertTrue(is_callable($list));
 
-        $test = static fn (callable $x) => $x();
+        $test = function (callable $x) {
+            return $x();
+        };
 
         $this->assertEquals($list(), $test($list));
     }
