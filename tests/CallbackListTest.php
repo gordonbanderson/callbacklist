@@ -63,14 +63,14 @@ class CallbackListTest extends TestCase
         $list = new CallbackList();
 
         $log = [];
-        $list->add(static function ($greeting, $punctuation = '') use (&$log): void {
-            $log[] = "$greeting, a$punctuation";
+        $list->add(static function ($greetingA, $punctuationA = '') use (&$log): void {
+            $log[] = "$greetingA, a$punctuationA";
         });
-        $list->add(static function ($greeting, $punctuation = '') use (&$log): void {
-            $log[] = "$greeting, b$punctuation";
+        $list->add(static function ($greetingB, $punctuationB = '') use (&$log): void {
+            $log[] = "$greetingB, b$punctuationB";
         });
-        $list->add(static function ($greeting, $punctuation = '') use (&$log): void {
-            $log[] = "$greeting, c$punctuation";
+        $list->add(static function ($greetingC, $punctuationC = '') use (&$log): void {
+            $log[] = "$greetingC, c$punctuationC";
         });
 
         $log = [];
@@ -111,16 +111,9 @@ class CallbackListTest extends TestCase
 
     public function testGetNamed(): void
     {
-        $a = static function (): void {
-            echo 'a';
-        };
-        $b = static function (): void {
-            echo 'b';
-        };
-
-        $list = new CallbackList();
-        $list->add($a, 'a');
-        $list->add($b, 'b');
+        $a = $this->getEchoFunction('a');
+        $b = $this->getEchoFunction('b');
+        $list = $this->createABCallBackList($a, $b);
 
         $this->assertEquals($a, $list->get('a'));
         $this->assertEquals($a, $list->get('b'));
@@ -129,16 +122,9 @@ class CallbackListTest extends TestCase
 
     public function testRemoveNamed(): void
     {
-        $a = static function (): void {
-            echo 'a';
-        };
-        $b = static function (): void {
-            echo 'b';
-        };
-
-        $list = new CallbackList();
-        $list->add($a, 'a');
-        $list->add($b, 'b');
+        $a = $this->getEchoFunction('a');
+        $b = $this->getEchoFunction('b');
+        $list = $this->createABCallBackList($a, $b);
         $list->remove('a');
 
         $this->assertEquals([$b], $list->getAll());
@@ -147,19 +133,11 @@ class CallbackListTest extends TestCase
 
     public function testClear(): void
     {
-        $a = static function (): void {
-            echo 'a';
-        };
-        $b = static function (): void {
-            echo 'b';
-        };
-        $c = static function (): void {
-            echo 'c';
-        };
+        $a = $this->getEchoFunction('a');
+        $b = $this->getEchoFunction('b');
+        $c = $this->getEchoFunction('c');
 
-        $list = new CallbackList();
-        $list->add($a);
-        $list->add($b);
+        $list = $this->createABCallBackList($a, $b);
         $list->clear();
         $list->add($c);
 
@@ -185,5 +163,26 @@ class CallbackListTest extends TestCase
     {
         $list = new CallbackList();
         $this->assertEquals([], $list());
+    }
+
+
+    private function createABCallBackList(callable $a, callable $b): CallbackList
+    {
+        $list = new CallbackList();
+        $list->add($a, 'a');
+        $list->add($b, 'b');
+
+        return $list;
+    }
+
+
+    /**
+     * Return a function that simply echoes the original provided parameter
+     */
+    private function getEchoFunction(string $toEcho): \Closure
+    {
+        return static function () use ($toEcho): void {
+            echo $toEcho;
+        };
     }
 }
